@@ -130,7 +130,7 @@ class PocketJobs extends PluginBase implements Listener
         $this->joblist->save();
     }
 
-    public function onCommand(CommandSender $sender, Command $command, $label, array $args)
+    public function onCommand(CommandSender $sender, Command $command, $label, array $args): bool
     {
         if (!($sender instanceof Player)) {
             $sender->sendMessage("Must be run in the world!");
