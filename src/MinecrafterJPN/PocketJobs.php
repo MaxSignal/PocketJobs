@@ -3,15 +3,18 @@
 namespace MinecrafterJPN;
 
 use pocketmine\block\Block;
+use pocketmine\item\Item;
 use pocketmine\event\block\BlockBreakEvent;
 use pocketmine\event\block\BlockPlaceEvent;
 use pocketmine\event\Listener;
 use pocketmine\event\player\PlayerJoinEvent;
-use pocketmine\Player;
+use pocketmine\player\Player;
 use pocketmine\plugin\PluginBase;
 use pocketmine\command\Command;
 use pocketmine\command\CommandSender;
 use pocketmine\utils\Config;
+use pocketmine\block\BlockLegacyIds;
+use pocketmine\Server;
 
 class PocketJobs extends PluginBase implements Listener
 {
@@ -20,11 +23,11 @@ class PocketJobs extends PluginBase implements Listener
     /** @var Config */
     private $joblist;
 
-    public function onLoad()
+    public function onLoad(): void
     {
     }
 
-    public function onEnable()
+    public function onEnable(): void
     {
         if (!file_exists($this->getDataFolder())) @mkdir($this->getDataFolder(), 0755, true);
         $this->users = new Config($this->getDataFolder() . "users.yml", Config::YAML);
@@ -33,45 +36,65 @@ class PocketJobs extends PluginBase implements Listener
                 'woodcutter' => array(
                     'break' => array(
                         array(
-                            'ID' => Block::WOOD,
+                            'ID' => BlockLegacyIds::LOG,
                             'meta' => 0,
                             'amount' => 25
                         ),
                         array(
-                            'ID' => Block::WOOD,
+                            'ID' => BlockLegacyIds::LOG,
                             'meta' => 1,
                             'amount' => 25
                         ),
                         array(
-                            'ID' => Block::WOOD,
+                            'ID' => BlockLegacyIds::LOG,
                             'meta' => 2,
                             'amount' => 25
                         ),
                         array(
-                            'ID' => Block::WOOD,
+                            'ID' => BlockLegacyIds::LOG,
                             'meta' => 3,
+                            'amount' => 25
+                        ),
+                        array(
+                            'ID' => BlockLegacyIds::LOG2,
+                            'meta' => 0,
+                            'amount' => 25
+                        ),
+                        array(
+                            'ID' => BlockLegacyIds::LOG2,
+                            'meta' => 1,
                             'amount' => 25
                         ),
                     ),
                     'place' => array(
                         array(
-                            'ID' => Block::SAPLING,
+                            'ID' => BlockLegacyIds::SAPLING,
                             'meta' => 0,
                             'amount' => 1
                         ),
                         array(
-                            'ID' => Block::SAPLING,
+                            'ID' => BlockLegacyIds::SAPLING,
                             'meta' => 1,
                             'amount' => 1
                         ),
                         array(
-                            'ID' => Block::SAPLING,
+                            'ID' => BlockLegacyIds::SAPLING,
                             'meta' => 2,
                             'amount' => 1
                         ),
                         array(
-                            'ID' => Block::SAPLING,
+                            'ID' => BlockLegacyIds::SAPLING,
                             'meta' => 3,
+                            'amount' => 1
+                        ),
+                        array(
+                            'ID' => BlockLegacyIds::SAPLING,
+                            'meta' => 4,
+                            'amount' => 1
+                        ),
+                        array(
+                            'ID' => BlockLegacyIds::SAPLING,
+                            'meta' => 5,
                             'amount' => 1
                         )
                     )
@@ -80,39 +103,44 @@ class PocketJobs extends PluginBase implements Listener
                 'miner' => array(
                     'break' => array(
                         array(
-                            'ID' => Block::STONE,
+                            'ID' => BlockLegacyIds::STONE,
                             'meta' => 0,
                             'amount' => 3
                         ),
                         array(
-                            'ID' => Block::GOLD_ORE,
+                            'ID' => BlockLegacyIds::GOLD_ORE,
                             'meta' => 0,
                             'amount' => 25
                         ),
                         array(
-                            'ID' => Block::IRON_ORE,
+                            'ID' => BlockLegacyIds::IRON_ORE,
                             'meta' => 0,
                             'amount' => 20
                         ),
                         array(
-                            'ID' => Block::LAPIS_ORE,
+                            'ID' => BlockLegacyIds::LAPIS_ORE,
                             'meta' => 0,
                             'amount' => 17
                         ),
                         array(
-                            'ID' => Block::OBSIDIAN,
+                            'ID' => BlockLegacyIds::OBSIDIAN,
                             'meta' => 0,
                             'amount' => 9
                         ),
                         array(
-                            'ID' => Block::DIAMOND_ORE,
+                            'ID' => BlockLegacyIds::DIAMOND_ORE,
                             'meta' => 0,
                             'amount' => 80
                         ),
                         array(
-                            'ID' => Block::REDSTONE_ORE,
+                            'ID' => BlockLegacyIds::REDSTONE_ORE,
                             'meta' => 0,
                             'amount' => 10
+                        ),
+                        array(
+                            'ID' => BlockLegacyIds::EMERALD_ORE,
+                            'meta' => 0,
+                            'amount' => 200
                         )
                     )
                 )
@@ -124,7 +152,7 @@ class PocketJobs extends PluginBase implements Listener
         $this->getServer()->getPluginManager()->registerEvents($this, $this);
     }
 
-    public function onDisable()
+    public function onDisable(): void
     {
         $this->users->save();
         $this->joblist->save();
@@ -213,23 +241,23 @@ class PocketJobs extends PluginBase implements Listener
 
     public function onPlayerBreakBlock(BlockBreakEvent $event)
     {
-        $this->workCheck("break", $event->getPlayer()->getName(), $event->getBlock()->getId(), $event->getBlock()->getDamage());
+        $this->workCheck("break", $event->getPlayer()->getName(), $event->getBlock()->getId(), $event->getBlock()->getMeta());
     }
 
     public function onPlayerPlaceBlock(BlockPlaceEvent $event)
     {
-        $this->workCheck("place", $event->getPlayer()->getName(), $event->getBlock()->getId(), $event->getBlock()->getDamage());
+        $this->workCheck("place", $event->getPlayer()->getName(), $event->getBlock()->getId(), $event->getBlock()->getMeta());
     }
 
     private function workCheck($type, $username, $id, $meta)
     {
-
+        print($id);
         foreach ($this->joblist->getAll() as $jobname => $jobinfo) {
             if (isset($jobinfo[$type])) {
                 foreach ($jobinfo[$type] as $detail) {
                     if ($detail['ID'] === $id and $detail['meta'] === $meta) {
                         $amount = $detail['amount'];
-                        $slots = $this->users->get($username);
+                           $slots = $this->users->get($username);
                         if ($slots['slot1'] === $jobname || $slots['slot2'] === $jobname) {
                             $this->getServer()->getPluginManager()->getPlugin("PocketMoney")->grantMoney($username, $amount);
                         }
@@ -243,19 +271,19 @@ class PocketJobs extends PluginBase implements Listener
     {
         $slots = $this->users->get($username);
         if ($slots['slot1'] === $job || $slots['slot2'] === $job) {
-            $this->getServer()->getPlayer($username)->sendMessage("You have been already part of $job");
+            $this->getServer()->getPlayerByPrefix($username)->sendMessage("You have been already part of $job");
             return;
         }
         if (isset($slots['slot1'])) {
             if (isset($slots['slot2'])) {
-                $this->getServer()->getPlayer($username)->sendMessage("Your job slot is full");
+                $this->getServer()->getPlayerByPrefix($username)->sendMessage("Your job slot is full");
             } else {
                 $this->users->set($username, array(
                     'slot1' => $slots['slot1'],
                     'slot2' => $job
                 ));
                 $this->users->save();
-                $this->getServer()->getPlayer($username)->sendMessage("Set $job to your job slot2");
+                $this->getServer()->getPlayerByPrefix($username)->sendMessage("Set $job to your job slot2");
             }
         } else {
             $this->users->set($username, array(
@@ -263,7 +291,7 @@ class PocketJobs extends PluginBase implements Listener
                 'slot2' => $slots['slot2']
             ));
             $this->users->save();
-            $this->getServer()->getPlayer($username)->sendMessage("Set $job to your job slot1");
+            $this->getServer()->getPlayerByPrefix($username)->sendMessage("Set $job to your job slot1");
         }
     }
 
@@ -276,16 +304,16 @@ class PocketJobs extends PluginBase implements Listener
                 'slot2' => $slots['slot2']
             ));
             $this->users->save();
-            $this->getServer()->getPlayer($username)->sendMessage("Remove $job from your job slot1");
+            $this->getServer()->getPlayerByPrefix($username)->sendMessage("Remove $job from your job slot1");
         } elseif ($slots['slot2'] === $job) {
             $this->users->set($username, array(
                 'slot1' => $slots['slot1'],
                 'slot2' => null
             ));
             $this->users->save();
-            $this->getServer()->getPlayer($username)->sendMessage("Remove $job from your job slot2");
+            $this->getServer()->getPlayerByPrefix($username)->sendMessage("Remove $job from your job slot2");
         } else {
-            $this->getServer()->getPlayer($username)->sendMessage("You are not part of $job");
+            $this->getServer()->getPlayerByPrefix($username)->sendMessage("You are not part of $job");
         }
     }
 
@@ -299,7 +327,7 @@ class PocketJobs extends PluginBase implements Listener
                         $id = $value['ID'];
                         $meta = $value['meta'];
                         $amount = $value['amount'];
-                        $this->getServer()->getPlayer($username)->sendMessage("$type $id:$meta $amount");
+                        $this->getServer()->getPlayerByPrefix($username)->sendMessage("$type $id:$meta $amount");
                     }
                 }
             }

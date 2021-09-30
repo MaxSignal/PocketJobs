@@ -1,8 +1,8 @@
 name: PocketJobs
 main: MinecrafterJPN\PocketJobs
 author: MinecrafterJPN
-version: 2.1
-api: [3.13.0]
+version: 2.2dev
+api: [4.0.0]
 load: POSTWORLD
 description: Introduces job into your world
 website: https://github.com/MinecrafterJPN/PocketJobs
@@ -13,10 +13,6 @@ commands:
   usage: /jobs [subcommand]
   permission: pocketjobs.command
 permissions:
- pocketjobs:
-  default: true
-  description: Allows using all the PocketJobs things
-  children:
-   pocketjobs.command:
+  pocketjobs.command:
     default: true
     description: Allows using all the PocketJobs commands
